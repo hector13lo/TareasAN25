@@ -1,0 +1,164 @@
+---
+title: "Regresión Lineal y Correlaciones Económicas"
+author: "Hector Muñiz"
+format: html
+editor: visual
+---
+
+# Instalación y Carga de Paquetes
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import statsmodels.api as sm
+```
+
+# Lectura de Datos
+
+```{python}
+df_inegi = pd.read_excel("C:/Users/maxim/OneDrive/Documentos/Análisis Númerico/inegi_subdata.xlsx")
+print("Nombres de columnas:", df_inegi.columns)
+```
+
+# Visualización de Correlaciones
+
+```{python}
+numericos = df_inegi.select_dtypes(include=[np.number])
+correlaciones = numericos.corr()
+print("Correlaciones entre variables:")
+display(correlaciones)
+
+plt.figure(figsize=(10,5))
+sns.heatmap(correlaciones, annot=True, cmap="RdBu", annot_kws={"size":8})
+plt.title("Mapa de Calor de Correlaciones")
+plt.xticks(rotation=60, ha="right")
+plt.tight_layout()
+plt.show()
+```
+
+# Modelo: IGAE \~ Actividad Industrial
+
+```{python}
+X = df_inegi["Actividad_Industrial"]
+y = df_inegi["IGAE"]
+X_ = sm.add_constant(X)
+modelo1 = sm.OLS(y, X_).fit()
+print(modelo1.summary())
+```
+
+**Análisis:**\
+La actividad industrial se relaciona de manera directa con el IGAE, mostrando una pendiente positiva en la regresión.
+
+# Modelo: Actividades Primarias \~ Índice de Precios al Consumidor
+
+```{python}
+X = df_inegi["Indice de Precios_Consumidor"]
+y = df_inegi["Actividades_Primarias"]
+X_ = sm.add_constant(X)
+modelo2 = sm.OLS(y, X_).fit()
+print(modelo2.summary())
+```
+
+```{python}
+plt.figure()
+sns.regplot(x="Indice de Precios_Consumidor", y="Actividades_Primarias", data=df_inegi, color="maroon", line_kws={"color":"black"})
+plt.title("Actividades Primarias vs Índice de Precios al Consumidor")
+plt.xlabel("Índice de Precios al Consumidor")
+plt.ylabel("Actividades Primarias")
+plt.tight_layout()
+plt.show()
+```
+
+**Análisis:**\
+A medida que sube el índice de precios al consumidor, se observa una leve tendencia ascendente en las actividades primarias.
+
+# Modelo: Exportaciones Totales \~ Importaciones Totales
+
+```{python}
+X = df_inegi["Importaciones_Totales"]
+y = df_inegi["Exportaciones_Totales"]
+X_ = sm.add_constant(X)
+modelo3 = sm.OLS(y, X_).fit()
+print(modelo3.summary())
+```
+
+```{python}
+plt.figure()
+sns.scatterplot(x="Importaciones_Totales", y="Exportaciones_Totales", data=df_inegi, color="crimson")
+plt.title("Exportaciones vs Importaciones Totales")
+plt.tight_layout()
+plt.show()
+```
+
+**Comentario:**\
+La regresión indica que existe una fuerte asociación positiva entre las importaciones y exportaciones totales.
+
+# Modelo: Importaciones No Petroleras \~ Exportaciones No Petroleras
+
+```{python}
+X = df_inegi["Exportaciones_No_Petroleras"]
+y = df_inegi["Importaciones_No_Petroleras"]
+X_ = sm.add_constant(X)
+modelo4 = sm.OLS(y, X_).fit()
+print(modelo4.summary())
+```
+
+# Modelo de Regresión Múltiple: IGAE \~ Actividades Terciarias + Actividad Industrial
+
+```{python}
+X_multi = df_inegi[["Actividades_Terciarias", "Actividad_Industrial"]]
+y_multi = df_inegi["IGAE"]
+X_multi_ = sm.add_constant(X_multi)
+modelo_multi = sm.OLS(y_multi, X_multi_).fit()
+print(modelo_multi.summary())
+```
+
+# Análisis de Acciones: Correlación y Regresiones
+
+```{python}
+acciones_df = pd.read_excel("C:/Users/maxim/OneDrive/Documentos/Análisis Númerico/Maximo_Quiroz_Tarea_3_Acciones.xlsx")
+numeros_acciones = acciones_df.select_dtypes(include=np.number)
+corr_acciones = numeros_acciones.corr()
+print("Correlación Acciones:")
+display(corr_acciones)
+
+plt.figure(figsize=(9,5))
+sns.heatmap(corr_acciones, annot=True, cmap="YlOrBr")
+plt.title("Correlación entre Acciones")
+plt.tight_layout()
+plt.show()
+```
+
+# Regresión: Netflix vs Apple
+
+```{python}
+X = acciones_df["Apple.Close"]
+y = acciones_df["Netflix.Close"]
+X_ = sm.add_constant(X)
+modelo_amaz_apple = sm.OLS(y, X_).fit()
+print(modelo_amaz_apple.summary())
+
+plt.figure()
+sns.regplot(x="Apple.Close", y="Netflix.Close", data=acciones_df, color="forestgreen", line_kws={"color":"red"})
+plt.title("Netflix vs Apple (Cierre)")
+plt.tight_layout()
+plt.show()
+```
+
+# Regresión: Amazon vs Microsoft
+
+```{python}
+X = acciones_df["Microsoft.Close"]
+y = acciones_df["Amazon.Close"]
+X_ = sm.add_constant(X)
+modelo_goog_msft = sm.OLS(y, X_).fit()
+print(modelo_goog_msft.summary())
+
+plt.figure()
+sns.regplot(x="Microsoft.Close", y="Amazon.Close", data=acciones_df, color="indigo", line_kws={"color":"goldenrod"})
+plt.title("Amazon vs Microsoft (Cierre)")
+plt.tight_layout()
+plt.show()
+```
